@@ -10,9 +10,9 @@ public class Game : MonoBehaviour
     public GameObject chesspiece;
     
     //Positions and team for each chess piece
-    private GameObject[,] positions = new GameObject[8, 8];
-    private GameObject[] playerBlack = new GameObject[16];
-    private GameObject[] playerWhite = new GameObject[16];
+    public GameObject[,] positions = new GameObject[8, 8];
+    public GameObject[] playerBlack = new GameObject[16];
+    public GameObject[] playerWhite = new GameObject[16];
 
     //whose turn?
     private string currentPlayer = "white";

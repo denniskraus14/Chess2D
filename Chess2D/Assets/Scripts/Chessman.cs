@@ -15,6 +15,9 @@ public class Chessman : MonoBehaviour
     //var to keep track of turn
     private string player;
 
+    //var to keep track of check
+    private bool check = false;
+
     //refs for all the sprites of chess pieces
     public Sprite black_king, black_queen, black_knight, black_bishop, black_rook, black_pawn;
     public Sprite white_king, white_queen, white_knight, white_bishop, white_rook, white_pawn;
@@ -83,6 +86,14 @@ public class Chessman : MonoBehaviour
         {
             DestroyMovePlates();  //remove previous move plates
             InitiateMovePlates(); //initiate new move plates
+            if (player.Equals("white"))
+            {
+                //check = isInCheck("black"); //is this the right place to call this?
+            }
+            else
+            {
+                //check = isInCheck("white");
+            }
         }
     }
 
@@ -97,70 +108,82 @@ public class Chessman : MonoBehaviour
 
     public void InitiateMovePlates()
     {
-        switch (this.name)
+        if (!check)
         {
-            case "black_queen":
-            case "white_queen":
-                LineMovePlate(1,0); //create a line of move plates. handles all possible move cases
-                LineMovePlate(1, 1);
-                LineMovePlate(0, 1);
-                LineMovePlate(-1, 0);
-                LineMovePlate(-1, -1);
-                LineMovePlate(0, -1);
-                LineMovePlate(-1, 1);
-                LineMovePlate(1, -1);
-                break;
-            case "black_knight":
-            case "white_knight":
-                LMovePlate();
-                break;
-            case "black_bishop":
-            case "white_bishop":
-                LineMovePlate(1,1);
-                LineMovePlate(1, -1);
-                LineMovePlate(-1, 1);
-                LineMovePlate(-1, -1);
-                break;
-            case "black_king":
-            case "white_king":
-                SurroundMovePlate();
-                break;
-            case "black_rook":
-            case "white_rook":
-                LineMovePlate(1,0);
-                LineMovePlate(0, 1);
-                LineMovePlate(-1, 0);
-                LineMovePlate(0, -1);
-                break;
-            case "black_pawn":
-                PawnMovePlate(xBoard, yBoard - 1);
-                break;
-            case "white_pawn":
-                PawnMovePlate(xBoard,yBoard + 1);
-                break;
+            switch (this.name)
+            {
+                case "black_queen":
+                case "white_queen":
+                    LineMovePlate(1, 0); //create a line of move plates. handles all possible move cases
+                    LineMovePlate(1, 1);
+                    LineMovePlate(0, 1);
+                    LineMovePlate(-1, 0);
+                    LineMovePlate(-1, -1);
+                    LineMovePlate(0, -1);
+                    LineMovePlate(-1, 1);
+                    LineMovePlate(1, -1);
+                    break;
+                case "black_knight":
+                case "white_knight":
+                    LMovePlate();
+                    break;
+                case "black_bishop":
+                case "white_bishop":
+                    LineMovePlate(1, 1);
+                    LineMovePlate(1, -1);
+                    LineMovePlate(-1, 1);
+                    LineMovePlate(-1, -1);
+                    break;
+                case "black_king":
+                case "white_king":
+                    SurroundMovePlate();
+                    break;
+                case "black_rook":
+                case "white_rook":
+                    LineMovePlate(1, 0);
+                    LineMovePlate(0, 1);
+                    LineMovePlate(-1, 0);
+                    LineMovePlate(0, -1);
+                    break;
+                case "black_pawn":
+                    PawnMovePlate(xBoard, yBoard - 1);
+                    break;
+                case "white_pawn":
+                    PawnMovePlate(xBoard, yBoard + 1);
+                    break;
+            }
+        }
+        else
+        {
+            ;//figure out how to display the boxes that get the player out of check
         }
     }
 
-    public void LineMovePlate(int xIncrement, int yIncrement)
+    public List<(int,int)> LineMovePlate(int xIncrement, int yIncrement)
     {
         Game sc = controller.GetComponent<Game>();
         int x = xBoard + xIncrement;
         int y = yBoard + yIncrement;
+        List<(int, int)> acc = new List<(int, int)>();
 
         while (sc.PositionOnBoard(x, y) && sc.GetPosition(x, y) == null) 
         {
             MovePlateSpawn(x, y);
+            acc.Add((x, y));
             x += xIncrement;
             y += yIncrement;
         }
         if (sc.PositionOnBoard(x, y) && sc.GetPosition(x, y).GetComponent<Chessman>().player != player)
         {
             MovePlateSpawn(x, y, true);
+            acc.Add((x, y));
         }
+        return acc;
     }
 
-    public void LMovePlate()
+    public List<(int, int)> LMovePlate()
     {
+        List<(int, int)> acc = new List<(int, int)>();
         PointMovePlate(xBoard + 1, yBoard + 2);
         PointMovePlate(xBoard - 1, yBoard + 2);
         PointMovePlate(xBoard + 2, yBoard + 1);
@@ -169,10 +192,20 @@ public class Chessman : MonoBehaviour
         PointMovePlate(xBoard - 1, yBoard - 2);
         PointMovePlate(xBoard - 2, yBoard + 1);
         PointMovePlate(xBoard - 2, yBoard - 1);
+        acc.Add((xBoard+1, yBoard+2));
+        acc.Add((xBoard-1, yBoard+2));
+        acc.Add((xBoard+2, yBoard+1));
+        acc.Add((xBoard+2, yBoard-1));
+        acc.Add((xBoard+1, yBoard-2));
+        acc.Add((xBoard-1, yBoard-2));
+        acc.Add((xBoard-2, yBoard+1));
+        acc.Add((xBoard-2, yBoard-1));
+        return acc;
     }
 
-    public void SurroundMovePlate()
+    public List<(int, int)> SurroundMovePlate()
     {
+        List<(int, int)> acc = new List<(int, int)>();
         PointMovePlate(xBoard,yBoard+1);
         PointMovePlate(xBoard, yBoard - 1);
         PointMovePlate(xBoard-1, yBoard);
@@ -181,10 +214,20 @@ public class Chessman : MonoBehaviour
         PointMovePlate(xBoard+1, yBoard - 1);
         PointMovePlate(xBoard+1, yBoard);
         PointMovePlate(xBoard+1, yBoard + 1);
+        acc.Add((xBoard, yBoard-1));
+        acc.Add((xBoard, yBoard+1));
+        acc.Add((xBoard-1, yBoard));
+        acc.Add((xBoard-1, yBoard-1));
+        acc.Add((xBoard-1, yBoard+1));
+        acc.Add((xBoard+1, yBoard-1));
+        acc.Add((xBoard+1, yBoard));
+        acc.Add((xBoard+1, yBoard+1));
+        return acc;
     }
 
-    public void PointMovePlate(int x, int y)
+    public List<(int, int)> PointMovePlate(int x, int y)
     {
+        List<(int, int)> acc = new List<(int, int)>();
         Game sc = controller.GetComponent<Game>();
         if (sc.PositionOnBoard(x, y))
         {
@@ -192,19 +235,23 @@ public class Chessman : MonoBehaviour
             if (cp == null)
             {
                 MovePlateSpawn(x, y);
+                acc.Add((x,y));
             }
             else if(cp.GetComponent<Chessman>().player!=player){
                 MovePlateSpawn(x, y, true);
+                acc.Add((x, y));
             }
         }
+        return acc;
     }
 
-    public void PawnMovePlate(int x, int y)
+    public List<(int, int)> PawnMovePlate(int x, int y)
     {
+        List<(int, int)> acc = new List<(int, int)>();
         Game sc = controller.GetComponent<Game>();
         if (sc.PositionOnBoard(x, y))
         {
-            //not at attack (forward)
+            //not an attack (forward)
             if (sc.GetPosition(x, y) == null)
             {
                 //check the color and row for each pawn and call this twice if they are in starting position ONLY
@@ -228,16 +275,20 @@ public class Chessman : MonoBehaviour
             if (sc.PositionOnBoard(x + 1, y) && sc.GetPosition(x + 1, y) != null && sc.GetPosition(x + 1, y).GetComponent<Chessman>().player != player)
             {
                 MovePlateSpawn(x + 1, y, true);
+                acc.Add((x + 1, y));
             }
             if (sc.PositionOnBoard(x - 1, y) && sc.GetPosition(x - 1, y) != null && sc.GetPosition(x - 1, y).GetComponent<Chessman>().player != player)
             {
                 MovePlateSpawn(x - 1, y, true);
+                acc.Add((x - 1, y));
             }
         }
+        return acc;
     }
 
     public void MovePlateSpawn(int matrixX, int matrixY, bool isAttack=false)
     {
+        //List<(int, int)> acc = new List<(int, int)>();
         float x = matrixX;
         float y = matrixY;
 
@@ -256,4 +307,96 @@ public class Chessman : MonoBehaviour
         mpScript.SetCoords(matrixX, matrixY);
 
     }
+
+    public void MovePlateCheck(int x, int y)
+    {
+        List<(int, int)> acc = new List<(int, int)>();
+        //this should only allow you to move to places that would take you out of check. if there are none for any piece, then checkmate
+        if (check)
+        {
+            //the valid moves are the ones that get you out of check
+        }
+    }
+    /*
+    public bool isInCheck(string player)
+    {
+        GameObject[] opponentPieces;
+        GameObject king;
+        Chessman cm;
+        if (player.Equals("white")) {
+            king = controller.GetComponent<Game>().playerWhite[4];
+            cm = king.GetComponent<Chessman>();
+            opponentPieces = controller.GetComponent<Game>().playerBlack;
+        }
+        else
+        {
+            king = controller.GetComponent<Game>().playerBlack[4];
+            cm = king.GetComponent<Chessman>();
+            opponentPieces = controller.GetComponent<Game>().playerWhite;
+        }
+        foreach(GameObject piece in opponentPieces){
+            //if this piece can attack king, check=True. else continue
+            List < List < (int, int) >> landingSpots = null ;
+            if (piece.name.Contains("queen"))
+            {
+                landingSpots.Add(LineMovePlate(1, 0));
+                landingSpots.Add(LineMovePlate(1, 1));
+                landingSpots.Add(LineMovePlate(0, 1));
+                landingSpots.Add(LineMovePlate(-1, 0));
+                landingSpots.Add(LineMovePlate(-1, -1));
+                landingSpots.Add(LineMovePlate(0, -1));
+                landingSpots.Add(LineMovePlate(-1, 1));
+                landingSpots.Add(LineMovePlate(1, -1));
+                DestroyMovePlates();
+            }
+            else if (piece.name.Contains("knight"))
+            {
+                landingSpots.Add(PointMovePlate(xBoard - 1, yBoard + 2));
+                landingSpots.Add(PointMovePlate(xBoard + 2, yBoard + 1));
+                landingSpots.Add(PointMovePlate(xBoard + 2, yBoard - 1));
+                landingSpots.Add(PointMovePlate(xBoard + 1, yBoard - 2));
+                landingSpots.Add(PointMovePlate(xBoard - 1, yBoard - 2));
+                landingSpots.Add(PointMovePlate(xBoard - 2, yBoard + 1));
+                landingSpots.Add(PointMovePlate(xBoard - 2, yBoard - 1));
+                DestroyMovePlates();
+
+            }
+            else if (piece.name.Contains("bishop"))
+            {
+                landingSpots.Add(LineMovePlate(1, 1));
+                landingSpots.Add(LineMovePlate(1, -1));
+                landingSpots.Add(LineMovePlate(-1, 1));
+                landingSpots.Add(LineMovePlate(-1, -1));
+                DestroyMovePlates();
+
+            }
+            else if (piece.name.Contains("rook"))
+            {
+                landingSpots.Add(LineMovePlate(1, 0));
+                landingSpots.Add(LineMovePlate(0, 1));
+                landingSpots.Add(LineMovePlate(-1, 0));
+                landingSpots.Add(LineMovePlate(0, -1));
+                DestroyMovePlates();
+            }
+            else if (piece.name.Contains("white_pawn"))
+            {
+                landingSpots.Add(PawnMovePlate(xBoard, yBoard + 1));
+                DestroyMovePlates();
+            }
+            else if (piece.name.Contains("black_pawn"))
+            {
+                landingSpots.Add(PawnMovePlate(xBoard, yBoard - 1));
+                DestroyMovePlates();
+            }
+            foreach (List<(int, int)> spots in landingSpots)
+            {
+                if (spots.Contains((cm.GetXBoard(), cm.GetYBoard())))
+                {
+                    check = true;
+                    return check;
+                }
+            }
+        }
+        return check;
+    }*/
 }
