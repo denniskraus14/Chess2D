@@ -208,12 +208,13 @@ public class Chessman : MonoBehaviour
             if (sc.GetPosition(x, y) == null)
             {
                 //check the color and row for each pawn and call this twice if they are in starting position ONLY
-                if ((player.Equals("white")&&y==2))
+                if ((player.Equals("white")&&y==2) && sc.GetPosition(x, y+1)==null)
                 {
                     MovePlateSpawn(x, y); //one space up
                     MovePlateSpawn(x, y+1); //two spaces up
                 }
-                else if((player.Equals("black") && y == 5)){
+                else if((player.Equals("black") && y == 5) && sc.GetPosition(x, y-1)==null)
+                {
                     MovePlateSpawn(x, y); //one space up
                     MovePlateSpawn(x, y-1); //two spaces up
                 }
