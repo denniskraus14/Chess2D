@@ -204,10 +204,26 @@ public class Chessman : MonoBehaviour
         Game sc = controller.GetComponent<Game>();
         if (sc.PositionOnBoard(x, y))
         {
+            //not at attack (forward)
             if (sc.GetPosition(x, y) == null)
             {
-                MovePlateSpawn(x, y);
+                //check the color and row for each pawn and call this twice if they are in starting position ONLY
+                if ((player.Equals("white")&&y==2))
+                {
+                    MovePlateSpawn(x, y); //one space up
+                    MovePlateSpawn(x, y+1); //two spaces up
+                }
+                else if((player.Equals("black") && y == 5)){
+                    MovePlateSpawn(x, y); //one space up
+                    MovePlateSpawn(x, y-1); //two spaces up
+                }
+                else
+                {
+                    MovePlateSpawn(x, y); //one space up
+                }
+                
             }
+            //two attack possibilities (left and right diagonal)
             if (sc.PositionOnBoard(x + 1, y) && sc.GetPosition(x + 1, y) != null && sc.GetPosition(x + 1, y).GetComponent<Chessman>().player != player)
             {
                 MovePlateSpawn(x + 1, y, true);
